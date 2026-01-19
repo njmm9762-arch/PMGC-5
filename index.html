@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بطولة PMGC</title>
+
+<style>
+*{box-sizing:border-box;font-family:tahoma;margin:0;padding:0}
+
+body{
+  background:#0b0f1a;
+  color:#fff;
+}
+
+/* شاشة الترحيب */
+.welcome{
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle,#1a1a1a,#000);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.welcome h1{
+  color:gold;
+  text-shadow:0 0 10px gold;
+  margin-bottom:20px;
+  animation:glow 1.5s infinite alternate;
+  text-align:center;
+}
+
+@keyframes glow{
+  from{opacity:.7}
+  to{opacity:1}
+}
+
+.welcome button{
+  padding:14px 30px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  background:gold;
+  color:#000;
+  box-shadow:0 0 15px gold;
+}
+
+/* الهيدر */
+header{
+  text-align:center;
+  padding:20px;
+}
+
+header h1{color:gold}
+header button{
+  margin-top:10px;
+}
+
+/* أزرار */
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  background:#1e90ff;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* اللاعبين */
+.players{
+  padding:15px;
+  max-width:900px;
+  margin:auto;
+}
+
+.player{
+  background:#141c33;
+  border-left:5px solid gold;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:12px;
+}
+
+.player h3{color:gold}
+.player p{margin:4px 0}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+}
+
+.like{
+  background:#ff4757;
+}
+
+.like span{
+  margin-right:5px;
+}
+
+/* الإداري */
+.admin{
+  max-width:400px;
+  margin:20px auto;
+  background:#10162a;
+  padding:15px;
+  border-radius:10px;
+  text-align:center;
+}
+
+.admin input{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin-bottom:10px;
+}
+
+/* التعليقات */
+.comments{
+  max-width:900px;
+  margin:20px auto;
+  background:#0e1530;
+  padding:15px;
+  border-radius:10px;
+}
+
+.comment{
+  background:#141c33;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:8px;
+}
+
+.comment.gold{
+  background:linear-gradient(135deg,#3a2f00,#1a1300);
+  border:1px solid gold;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ترحيب -->
+<div class="welcome" id="welcome">
+  <h1>✨ بطولة PMGC ✨</h1>
+  <button onclick="enter()">دخول</button>
+</div>
+
+<div id="content" style="display:none">
+
+<header>
+  <h1>بطولة PMGC</h1>
+  <p>الموقع الرسمي للبطولة</p>
+</header>
+
+<section class="players">
+  <h2>اللاعبون المقبولون</h2>
+  <div id="players"></div>
+</section>
+
+<div class="admin" id="adminLogin">
+  <input type="password" id="adminPass" placeholder="كلمة سر الإداري">
+  <button onclick="login()">دخول إداري</button>
+</div>
+
+<section class="comments">
+  <h3>تعليقات البطولة</h3>
+  <input id="commentText" placeholder="اكتب تعليقك" style="width:100%;padding:10px;border-radius:8px;border:none">
+  <button onclick="addComment()" style="margin-top:8px">نشر</button>
+  <div id="commentsList" style="margin-top:10px"></div>
+</section>
+
+</div>
+
+<script>
+let audioEnabled=false;
+const ADMIN_PASSWORD="PMGC2026";
+
+/* اللاعبين — عدل هنا */
+const players=[
+ {name:"عمر السيد محمد",id:"5535931335",code:"5682"},
+ {name:"محمد أحمد",id:"5114404295",code:"0618"},
+ {name:"زياد محمود",id:"5181732509",code:"4681"}
+];
+
+/* دخول */
+function enter(){
+ audioEnabled=true;
+ document.getElementById("welcome").style.display="none";
+ document.getElementById("content").style.display="block";
+ renderPlayers();
+}
+
+/* صوت */
+function speak(text){
+ if(!audioEnabled) return;
+ const s=new SpeechSynthesisUtterance(text);
+ s.lang="ar";
+ speechSynthesis.speak(s);
+}
+
+/* لايكات */
+function getLikes(i){
+ return Number(localStorage.getItem("like_"+i)||0);
+}
+function addLike(i){
+ let n=getLikes(i)+1;
+ localStorage.setItem("like_"+i,n);
+ renderPlayers();
+}
+
+/* عرض اللاعبين */
+function renderPlayers(){
+ const box=document.getElementById("players");
+ box.innerHTML="";
+ players.forEach((p,i)=>{
+  const div=document.createElement("div");
+  div.className="player";
+  div.innerHTML=`
+   <h3>${p.name}</h3>
+   <p>ID: ${p.id}</p>
+   <p>كود الدخول: <b>${p.code}</b></p>
+   <div class="actions">
+     <button onclick="speak('تم قبول اللاعب ${p.name}')">🔊 نطق</button>
+     <button class="like" onclick="addLike(${i})">👍 <span>${getLikes(i)}</span></button>
+   </div>
+  `;
+  box.appendChild(div);
+ });
+}
+
+/* إداري */
+function login(){
+ if(document.getElementById("adminPass").value===ADMIN_PASSWORD){
+  alert("تم الدخول كإداري");
+ }
+}
+
+/* تعليقات */
+function getComments(){
+ return JSON.parse(localStorage.getItem("comments")||"[]");
+}
+function saveComments(c){
+ localStorage.setItem("comments",JSON.stringify(c));
+}
+function addComment(){
+ let t=document.getElementById("commentText").value.trim();
+ if(!t) return;
+ let c=getComments();
+ c.push({text:t});
+ saveComments(c);
+ document.getElementById("commentText").value="";
+ renderComments();
+}
+function renderComments(){
+ const box=document.getElementById("commentsList");
+ box.innerHTML="";
+ getComments().forEach(x=>{
+  const d=document.createElement("div");
+  d.className="comment";
+  d.textContent=x.text;
+  box.appendChild(d);
+ });
+}
+renderComments();
+</script>
+
+</body>
+</html>
